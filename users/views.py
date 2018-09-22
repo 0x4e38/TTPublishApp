@@ -27,21 +27,7 @@ from users.models import (BusinessUser,
                           AreaProvince,
                           BusinessUserBind,
                           Group)
-from users.forms import (CreateUserForm,
-                         UpdateUserInfoForm,
-                         SetPasswordForm,
-                         SendIdentifyingCodeForm,
-                         VerifyIdentifyingCodeForm,
-                         BatchUploadStoreForm,
-                         BusinessUserBatchCreateColumnDetailForm,
-                         BatchUploadStoreFileTemplateForm,
-                         CreateStoreUserForm,
-                         UpdateStoreUserForm,
-                         StoreDetailForm,
-                         StoreListForm,
-                         AreaProvinceListForm,
-                         AreaCityListForm,
-                         BrandListForm)
+from users.forms import (TTLoginForPhoneForm,)
 
 from horizon.views import (APIView,
                            FMDetailAPIView,

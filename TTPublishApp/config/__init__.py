@@ -29,25 +29,25 @@ ENVIRONMENT = ''
 
 # 开发环境
 if platform.system() == 'Darwin' or platform.system() == 'Windows':
-    from FMBusinessApp.config.config_local import *
+    from TTPublishApp.config.config_local import *
     ENVIRONMENT = 'DEV'
 
 # Docker测试环境配置
 elif test_sign:
-    from FMBusinessApp.config.config_test import *
+    from TTPublishApp.config.config_test import *
     ENVIRONMENT = 'TEST_DOCKER'
 
 # 测试环境
 elif ip in ('10.74.100.16', ):
-    from FMBusinessApp.config.config_test import *
+    from TTPublishApp.config.config_test import *
     ENVIRONMENT = 'TEST'
 
 # 生产环境
 elif ip in ('10.74.105.9', '10.74.105.14'):
-    from FMBusinessApp.config.config import *
+    from TTPublishApp.config.config import *
     ENVIRONMENT = 'PRODUCT'
 
 else:
-    from FMBusinessApp.config.config_local import *
+    from TTPublishApp.config.config_local import *
     ENVIRONMENT = 'DEV'
 

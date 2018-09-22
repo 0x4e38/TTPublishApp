@@ -43,8 +43,8 @@ class BaseListSerializer(serializers.ListSerializer):
         has_next = True
         if len(page.object_list) < page_size:
             has_next = False
-        elif page_size * page_index >= len(serializer):
-            has_next = False
+        # elif page_size * page_index >= len(serializer):
+        #     has_next = False
         results = {'count': len(page.object_list),
                    'all_count': len(serializer),
                    'has_next': has_next,

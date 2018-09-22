@@ -75,6 +75,11 @@ def make_time_delta_for_custom(date_time, days=0, hours=0, minutes=0, seconds=0)
                                           seconds=seconds)
 
 
+def make_millisecond_time_stamp():
+    time_stamp = '%s' % int(time.time() * 1000)
+    return time_stamp
+
+
 def make_perfect_time_delta(days=0, hours=0, minutes=0, seconds=0):
     """
     设置时间增量
