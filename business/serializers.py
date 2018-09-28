@@ -34,6 +34,7 @@ class CookieSerializer(BaseModelSerializer):
     }
     _p_errors = None
     phone = None
+    tt_token = None
 
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
@@ -52,7 +53,8 @@ class CookieSerializer(BaseModelSerializer):
             result = send_http_request(access_url=call_url,
                                        access_params=params,
                                        method=APP_REQUEST_URLS['login']['method'],
-                                       headers=header)
+                                       headers=header,
+                                       verify=False)
             if isinstance(result, Exception) or result.text['message'] != 'success':
                 self._p_errors = 'Login TT failed'
             else:
@@ -70,12 +72,14 @@ class CookieSerializer(BaseModelSerializer):
                 #  'X-TT-LOGID': '20180922175412010020078144619D52',
                 #  'X-TT-TIMESTAMP': '1537610052.696',
                 #  'X-Tt-Token': '0023f79bad721a8c4d5630f1afd3321d831f853906ffd4861989e6caa0bc60382ce2fe8c9cd70c0dcd7cb58299740327467',
-                #  'X-Tt-Token-Sign': 'a7a046775dd8c105a5ab263dbae8b146ee1e353a3ba327b92511c066bac34f8635e38a979a5ffee3d6521e218d3483a2b68fee1113ef0304b59eb6543a8662b56ca7f88376aff320cf656b4bb737cedf3aab6165a96e10a8cafafb502e1bd995fe6cf534a3cdcb3ecd676e81c15db19e111d83da31c9a63fd5d8548cd043d1c3'}
+                #  'X-Tt-Token-Sign': 'a7a046775dd8c105a5ab263dbae8b146ee1e353a3ba327b92511c066bac34f8635e38a979a5ffee3d6521e218d3483a2b68fee1113ef0304b59eb6543a8662b56ca7f88376aff320cf656b4bb737cedf3aab6165a96e10a8cafafb502e1bd995fe6cf534a3cdcb3ecd676e81c15db19e111d83da31c9a63fd5d8548cd043d1c3'
+                # }
                 # set cookie
                 header_dict = dict(result.headers)
                 re_com = re.compile(r'[^,]*?=[^,]*?;')
                 set_cookie_list = [item.strip() for item in re_com.findall(header_dict['Set-Cookie'])]
                 set_cookie_list = [item.strip(';').split('=') for item in set_cookie_list]
+                self.tt_token = header_dict['X-Tt-Token']
 
                 opts = self.Meta.model._meta
                 fields = [f.name for f in opts.concrete_fields]
@@ -101,6 +105,14 @@ class CookieSerializer(BaseModelSerializer):
 
     def save(self, **kwargs):
         cookie_instance = Cookie.get_object(phone=self.phone)
+
+        # 新建或更新token
+        tt_serializer = TokenSerializer(data={'phone': self.phone,
+                                              'token': self.tt_token})
+        if not tt_serializer.is_valid():
+            raise Exception(tt_serializer.errors)
+        tt_serializer.save()
+
         # 新建cookie
         if isinstance(cookie_instance, Exception):
             kwargs.update(**self.contant_cookie_dict)
@@ -108,3 +120,19 @@ class CookieSerializer(BaseModelSerializer):
         else:
             # 更新cookie
             return super(CookieSerializer, self).update(cookie_instance, self.validated_data)
+
+
+class TokenSerializer(BaseModelSerializer):
+    class Meta:
+        model = Token
+        fields = '__all__'
+
+    def save(self, **kwargs):
+        instance = self.Meta.model.get_object(phone=self.validated_data['phone'])
+        # 新建token
+        if isinstance(instance, Exception):
+            return super(TokenSerializer, self).save()
+        else:
+            # 更新token
+            return super(TokenSerializer, self).update(instance, self.validated_data)
+
