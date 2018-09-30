@@ -24,14 +24,14 @@ class TTUser(BaseModelMixin, models.Model):
     """
     TT user信息
     """
-    user_id = models.BigIntegerField('TT user id', unique=True)
-    name = models.CharField('昵称', max_length=128, null=True, blank=True)
-    phone = models.CharField('手机号', max_length=16, unique=True, null=True)
-    email = models.EmailField('邮箱',  max_length=128, unique=True, null=True)
-    password_for_phone = models.CharField('手机登录密码', max_length=64, null=True)
-    password_for_email = models.CharField('邮箱登录密码', max_length=64, null=True)
-    created = models.DateTimeField('创建时间', default=now)
-    updated = models.DateTimeField('更新时间', auto_now=True)
+    user_id = models.BigIntegerField(u'TT user id', unique=True)
+    name = models.CharField(u'昵称', max_length=128, null=True, blank=True)
+    phone = models.CharField(u'手机号', max_length=16, unique=True, null=True)
+    email = models.EmailField(u'邮箱',  max_length=128, unique=True, null=True)
+    password_for_phone = models.CharField(u'手机登录密码', max_length=64, null=True)
+    password_for_email = models.CharField(u'邮箱登录密码', max_length=64, null=True)
+    created = models.DateTimeField(u'创建时间', default=now)
+    updated = models.DateTimeField(u'更新时间', auto_now=True)
 
     class Meta:
         db_table = 'tt_auth_user'
@@ -58,39 +58,39 @@ class RequestPublicParams(BaseModelMixin, models.Model):
     """
     请求公共参数
     """
-    phone = models.CharField('手机号', max_length=16, unique=True)
+    phone = models.CharField(u'手机号', max_length=16, unique=True)
 
-    ab_client = models.CharField('ab_client', max_length=64)
-    ab_feature = models.CharField('ab_feature', max_length=32)
-    ab_group = models.CharField('ab_group', max_length=32)
-    ab_version = models.TextField('ab_version')
-    ac = models.CharField('网络类型', max_length=32)
-    aid = models.CharField('aid', max_length=32)
-    app_name = models.CharField('app_name', max_length=32)
-    app_id = models.CharField('app_id', max_length=32)
-    _as = models.CharField('as', max_length=32)
+    ab_client = models.CharField(u'ab_client', max_length=64)
+    ab_feature = models.CharField(u'ab_feature', max_length=32)
+    ab_group = models.CharField(u'ab_group', max_length=32)
+    ab_version = models.TextField(u'ab_version')
+    ac = models.CharField(u'网络类型', max_length=32)
+    aid = models.CharField(u'aid', max_length=32)
+    app_name = models.CharField(u'app_name', max_length=32)
+    app_id = models.CharField(u'app_id', max_length=32)
+    _as = models.CharField(u'as', max_length=32)
 
-    channel = models.CharField('channel', max_length=32)
-    device_id = models.CharField('device_id', max_length=32)
-    device_platform = models.CharField('device_platform', max_length=32)
-    device_type = models.CharField('device_type', max_length=32)
-    fp = models.CharField('fp', max_length=64, default='')
-    idfa = models.CharField('idfa', max_length=64)
-    idfv = models.CharField('idfv', max_length=64)
-    iid = models.CharField('iid', max_length=32)
-    openudid = models.CharField('openudid', max_length=64)
+    channel = models.CharField(u'channel', max_length=32)
+    device_id = models.CharField(u'device_id', max_length=32)
+    device_platform = models.CharField(u'device_platform', max_length=32)
+    device_type = models.CharField(u'device_type', max_length=32)
+    fp = models.CharField(u'fp', max_length=64, default='')
+    idfa = models.CharField(u'idfa', max_length=64)
+    idfv = models.CharField(u'idfv', max_length=64)
+    iid = models.CharField(u'iid', max_length=32)
+    openudid = models.CharField(u'openudid', max_length=64)
 
-    os_version = models.CharField('os_version', max_length=32)
-    resolution = models.CharField('resolution', max_length=32)
-    ssmix = models.CharField('ssmix', max_length=32)
-    tma_jssdk_version = models.CharField('tma_jssdk_version', max_length=32)
-    ts = models.CharField('ts', max_length=32)
-    update_version_code = models.CharField('update_version_code', max_length=32)
-    version_code = models.CharField('version_code', max_length=32)
-    vid = models.CharField('vid', max_length=64)
-    vendor_id = models.CharField('vendor_id', max_length=64)
-    mix_mode = models.CharField('mix_mode', max_length=16)
-    install_id = models.CharField('install_id', max_length=16)
+    os_version = models.CharField(u'os_version', max_length=32)
+    resolution = models.CharField(u'resolution', max_length=32)
+    ssmix = models.CharField(u'ssmix', max_length=32)
+    tma_jssdk_version = models.CharField(u'tma_jssdk_version', max_length=32)
+    ts = models.CharField(u'ts', max_length=32)
+    update_version_code = models.CharField(u'update_version_code', max_length=32)
+    version_code = models.CharField(u'version_code', max_length=32)
+    vid = models.CharField(u'vid', max_length=64)
+    vendor_id = models.CharField(u'vendor_id', max_length=64)
+    mix_mode = models.CharField(u'mix_mode', max_length=16)
+    install_id = models.CharField(u'install_id', max_length=16)
 
     class Meta:
         db_table = 'tt_request_public_params'
@@ -125,8 +125,10 @@ class Token(BaseModelMixin, models.Model):
     """
     Token信息
     """
-    tt_user_id = models.BigIntegerField('TT user ID', unique=True)
-    token = models.CharField('token字符串', max_length=128)
+    tt_user_id = models.BigIntegerField(u'TT user ID', unique=True)
+    token = models.CharField(u'token字符串', max_length=128)
+    created = models.DateTimeField(u'创建时间', default=now)
+    updated = models.DateTimeField(u'更新时间', auto_now=TTUser)
 
     class Meta:
         db_table = 'tt_token'
@@ -139,17 +141,17 @@ class Cookie(BaseModelMixin, models.Model):
     """
     Cookie信息
     """
-    tt_user_id = models.BigIntegerField('TT user ID', unique=True)
+    tt_user_id = models.BigIntegerField(u'TT user ID', unique=True)
 
-    UM_distinctid = models.CharField('UM_distinctid', max_length=128)
-    alert_coverage = models.CharField('alert_coverage', max_length=16)
-    install_id = models.CharField('install_id', max_length=32)
-    odin_tt = models.CharField('odin_tt', max_length=128)
-    sessionid = models.CharField('sessionid', max_length=64)
-    sid_guard = models.CharField('sid_guard', max_length=128)
-    sid_tt = models.CharField('sid_tt', max_length=64)
-    ttreq = models.CharField('ttreq', max_length=64)
-    uid_tt = models.CharField('uid_tt', max_length=64)
+    UM_distinctid = models.CharField(u'UM_distinctid', max_length=128)
+    alert_coverage = models.CharField(u'alert_coverage', max_length=16)
+    install_id = models.CharField(u'install_id', max_length=32)
+    odin_tt = models.CharField(u'odin_tt', max_length=128)
+    sessionid = models.CharField(u'sessionid', max_length=64)
+    sid_guard = models.CharField(u'sid_guard', max_length=128)
+    sid_tt = models.CharField(u'sid_tt', max_length=64)
+    ttreq = models.CharField(u'ttreq', max_length=64)
+    uid_tt = models.CharField(u'uid_tt', max_length=64)
 
     class Meta:
         db_table = 'tt_cookie'
@@ -241,12 +243,12 @@ class ArticleCommentRecord(BaseModelMixin, models.Model):
     """
     文章评论记录
     """
-    url = models.CharField('文章url', max_length=256)
-    group_id = models.CharField('文章group id', max_length=128)
-    tt_user_id = models.BigIntegerField('tt user id')
-    content = models.CharField('评论内容', max_length=256)
-    created = models.DateTimeField('创建时间', default=now)
-    updated = models.DateTimeField('更新时间', auto_now=True)
+    url = models.CharField(u'文章url', max_length=256)
+    group_id = models.CharField(u'文章group id', max_length=128)
+    tt_user_id = models.BigIntegerField(u'tt user id')
+    content = models.CharField(u'评论内容', max_length=256)
+    created = models.DateTimeField(u'创建时间', default=now)
+    updated = models.DateTimeField(u'更新时间', auto_now=True)
 
     class Meta:
         db_table = 'tt_article_comment_record'

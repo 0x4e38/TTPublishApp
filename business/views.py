@@ -58,18 +58,14 @@ class TTLoginAction(generics.GenericAPIView):
         is_valid, error_message = self.is_request_data_valid(**cld)
         if not is_valid:
             return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, error_message)
-
-        serializer = self.post_serializer_class.login_active(validated_data=cld)
-        if not serializer.is_valid():
-            return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, serializer.errors)
         try:
-            serializer.save()
+            serializer = self.post_serializer_class.login_active(validated_data=cld)
         except Exception as e:
             return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, e.args)
         return fm_status.return_success_response()
 
 
-ARTICLE_URL_COMPILE = re.compile(r'^http://toutiao.com/group/(\d+)/$')
+ARTICLE_URL_COMPILE = re.compile(r'^https://m.toutiaocdn.cn/group/(\d+)/$')
 
 
 class TTCommentAction(FMActionAPIView):
@@ -88,9 +84,11 @@ class TTCommentAction(FMActionAPIView):
         return True, None
 
     def get_perfect_request_data(self, **kwargs):
-        article_url = kwargs['article_url']
+        article_url = kwargs.pop('article_url')
         result = ARTICLE_URL_COMPILE.match(article_url)
         kwargs['group_id'] = result.group(1)
+        kwargs['url'] = article_url
+
         return kwargs
 
     def post(self, request, *args, **kwargs):

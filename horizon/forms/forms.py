@@ -11,7 +11,7 @@ class Form(forms.Form):
 
     def cleaned_data_filter(self, cld):
         for key in list(cld.keys()):
-            if isinstance(cld[key], (bytes, str)):
+            if isinstance(cld[key], (bytes, str, unicode)):
                 if not cld[key]:
                     cld.pop(key)
             else:

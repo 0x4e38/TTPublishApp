@@ -169,6 +169,8 @@ class CookieSerializer(BaseModelSerializer):
     @classmethod
     def login_active(cls, validated_data):
         serializer = cls(data=validated_data)
+        if serializer._p_errors:
+            raise Exception(serializer._p_errors)
 
         serializer.update_token_and_user()
         if not serializer.instance:
@@ -259,8 +261,7 @@ class ArticleCommentRecordSerializer(BaseModelSerializer):
         if data:
             # 发表评论
             result = self.comment_to_tt(data)
-            response_json = json.loads(result.text)
-            if isinstance(result, Exception) or response_json['message'] != 'success':
+            if isinstance(result, Exception) or json.loads(result.text)['message'] != 'success':
                 self._p_errors = 'Comment to TT failed'
 
             super(ArticleCommentRecordSerializer, self).__init__(data=data, **kwargs)
@@ -282,11 +283,11 @@ class ArticleCommentRecordSerializer(BaseModelSerializer):
         )
         params = copy.copy(comment_params)
         params['comment_duration'] = params['comment_duration']()
-        params['content'] = data['comment_content']
+        params['content'] = data['content']
         params['group_id'] = data['group_id']
         params['item_id'] = data['group_id']
         params['staytime_ms'] = params['staytime_ms']()
-        params['text'] = data['comment_content']
+        params['text'] = data['content']
 
         header = HttpHeaderAction.make_tt_http_header(tt_user_id=data['tt_user_id'])
         result = send_http_request(access_url=call_url,

@@ -37,9 +37,9 @@ class TTCommentActionForm(forms.Form):
                                   error_messages={
                                       'required': u'文章url不能为空',
                                   })
-    comment_content = forms.CharField(min_length=1, max_length=256,
-                                      error_messages={
-                                          'required': u'评论内容不能为空',
-                                          'max_length': u'评论内容太长',
-                                      })
+    content = forms.CharField(min_length=1, max_length=256,
+                              error_messages={
+                                  'required': u'评论内容不能为空',
+                                  'max_length': u'评论内容太长',
+                              })
 
