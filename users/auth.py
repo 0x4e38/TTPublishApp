@@ -12,7 +12,7 @@ class BusinessUserBackend(object):
     #     identifying_kwargs = {'phone': username,
     #                           'identifying_code': password}
     #
-    #     user = BusinessUser.get_object(translate_cos_url=False, **kwargs)
+    #     user = BusinessUser.get_object(**kwargs)
     #     if isinstance(user, Exception):
     #         return None
     #

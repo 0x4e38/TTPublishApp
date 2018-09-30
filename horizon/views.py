@@ -47,7 +47,7 @@ class FMActionAPIView(generics.GenericAPIView):
 
     def get_instance(self, request, pk):
         kwargs = {'pk': pk}
-        return self.model_class.get_object(translate_cos_url=False, **kwargs)
+        return self.model_class.get_object(**kwargs)
 
     def is_request_data_valid(self, **kwargs):
         return True, None

@@ -8,10 +8,11 @@
 #
 # PBR should always appear first
 
-Django==1.10
+Django==2.0.4
 Pillow>=4.1.1
 djangorestframework>=3.6.2
 MySQL-python>=1.2.5
+# PyMySQL>=0.8.0
 django-oauth-toolkit>=0.12.0
 uwsgi
 lxml>=3.7.0
@@ -19,10 +20,20 @@ qrcode
 pycrypto>=2.6.0
 redis>=2.10.5
 pyBarcode>=0.7.0
+mysqlclient>=1.3.3
+
+# 允许跨域请求
+# django-cors-headers
 
 # 管理uwsgi进程
 supervisor
 
-# 允许跨域请求
-django-cors-headers
+# API文档生成器
+django-rest-swagger
+django-rest-framework-social-oauth2
+
+# excel 处理库
+xlrd
+
+matplotlib
 
