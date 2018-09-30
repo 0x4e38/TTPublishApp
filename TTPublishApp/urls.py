@@ -28,9 +28,7 @@ urlpatterns = [
     # url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 
     url(r'^auth/', include('users.urls', namespace='users')),
-    url(r'^clothes/', include('clothes.urls', namespace='clothes')),
     url(r'^business/', include('business.urls', namespace='business')),
 
-    url(r'^setup/', include('setup.urls', namespace='setup')),
 ]
 
