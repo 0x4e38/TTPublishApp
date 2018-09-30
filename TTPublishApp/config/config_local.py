@@ -20,9 +20,9 @@ INSTALLED_APPS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fairy_mirror_bz',
-        'USER': 'fairy_mirror_test',
-        'PASSWORD': 'Con!082%Trib*HLie810283*(#2Exdwd3eifqonfI)*&#@C',
+        'NAME': 'TT_BZ',
+        'USER': 'yinShi_project',
+        'PASSWORD': 'Con!082%Trib',
         'HOST': '127.0.0.1',
         'PORT': 3306,
     },
