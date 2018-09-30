@@ -67,12 +67,14 @@ class RequestPublicParams(BaseModelMixin, models.Model):
     ac = models.CharField('网络类型', max_length=32)
     aid = models.CharField('aid', max_length=32)
     app_name = models.CharField('app_name', max_length=32)
-    as_ = models.CharField('as', max_length=32)
+    app_id = models.CharField('app_id', max_length=32)
+    _as = models.CharField('as', max_length=32)
 
     channel = models.CharField('channel', max_length=32)
     device_id = models.CharField('device_id', max_length=32)
     device_platform = models.CharField('device_platform', max_length=32)
     device_type = models.CharField('device_type', max_length=32)
+    fp = models.CharField('fp', max_length=64, default='')
     idfa = models.CharField('idfa', max_length=64)
     idfv = models.CharField('idfv', max_length=64)
     iid = models.CharField('iid', max_length=32)
@@ -86,6 +88,9 @@ class RequestPublicParams(BaseModelMixin, models.Model):
     update_version_code = models.CharField('update_version_code', max_length=32)
     version_code = models.CharField('version_code', max_length=32)
     vid = models.CharField('vid', max_length=64)
+    vendor_id = models.CharField('vendor_id', max_length=64)
+    mix_mode = models.CharField('mix_mode', max_length=16)
+    install_id = models.CharField('install_id', max_length=16)
 
     class Meta:
         db_table = 'tt_request_public_params'
@@ -97,7 +102,7 @@ class RequestPublicParams(BaseModelMixin, models.Model):
     def perfect_detail(self):
         detail = super(RequestPublicParams, self).perfect_detail
         # "as"字段和python关键字重复
-        detail['as'] = detail.pop('as_')
+        detail['as'] = detail.pop('_as')
         return detail
 
     @classmethod

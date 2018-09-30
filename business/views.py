@@ -1,15 +1,18 @@
 # -*- coding: utf8 -*-
 from django.utils.timezone import now
+from rest_framework import generics
 
 from business.serializers import (CookieSerializer,
                                   ArticleCommentRecordSerializer)
-from business.forms import (TTLoginForPhoneForm,
+from business.forms import (TTLoginActionForm,
                             TTCommentActionForm)
 from business.models import (TTUser,
                              ArticleCommentRecord)
 from horizon.views import (FMActionAPIView,
                            FMDetailAPIView,
                            FMListAPIView)
+from horizon.http import status as fm_status
+
 from horizon import main
 
 import json
@@ -17,11 +20,11 @@ import random
 import re
 
 
-class TTLoginAction(FMActionAPIView):
+class TTLoginAction(generics.GenericAPIView):
     """
     TT登录
     """
-    post_form_class = TTLoginForPhoneForm
+    post_form_class = TTLoginActionForm
     post_serializer_class = CookieSerializer
     model_class = None
 
@@ -38,13 +41,32 @@ class TTLoginAction(FMActionAPIView):
 
     def post(self, request, *args, **kwargs):
         """
-        TT登录
+        创建数据
         :param request: 
         :param args: 
         :param kwargs: 
         :return: 
         """
-        return super(TTLoginAction, self).post(request, *args, **kwargs)
+        if not (self.post_form_class or self.post_serializer_class):
+            return fm_status.return_error_response(fm_status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        form = self.post_form_class(request.data, request.FILES)
+        if not form.is_valid():
+            return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, form.errors)
+
+        cld = form.cleaned_data
+        is_valid, error_message = self.is_request_data_valid(**cld)
+        if not is_valid:
+            return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, error_message)
+
+        serializer = self.post_serializer_class.login_active(validated_data=cld)
+        if not serializer.is_valid():
+            return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, serializer.errors)
+        try:
+            serializer.save()
+        except Exception as e:
+            return fm_status.return_error_response(fm_status.HTTP_400_BAD_REQUEST, e.args)
+        return fm_status.return_success_response()
 
 
 ARTICLE_URL_COMPILE = re.compile(r'^http://toutiao.com/group/(\d+)/$')

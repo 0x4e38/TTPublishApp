@@ -17,12 +17,13 @@ class DjangoAPIPermissionOrAnonReadOnly(permissions.IsAuthenticated):
         :return: True or False
         """
         has_permission = super(DjangoAPIPermissionOrAnonReadOnly, self).has_permission(request, view)
-        if not has_permission:
-            return has_permission
-
-        # 查找request用户是否有权限访问该接口
-        # 获取当前调用请求的api
-        call_api = '%s:%s' % (request.path, request.method.upper())
-        if not request.user.has_permission_call_api(call_api):
-            return False
-        return True
+        return has_permission
+        # if not has_permission:
+        #     return has_permission
+        #
+        # # 查找request用户是否有权限访问该接口
+        # # 获取当前调用请求的api
+        # call_api = '%s:%s' % (request.path, request.method.upper())
+        # if not request.user.has_permission_call_api(call_api):
+        #     return False
+        # return True

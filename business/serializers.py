@@ -29,6 +29,9 @@ import re
 
 
 class CookieSerializer(BaseModelSerializer):
+    cookie_fields = ('odin_tt', 'sessionid', 'uid_tt', 'sid_tt', 'install_id',
+                     'alert_coverage', 'ttreq', 'UM_distinctid', 'sid_guard',
+                     'tt_user_id')
     contant_cookie_dict = {
         'UM_distinctid': '165e0b539854d3-09cfd48005b33d8-75460e45-4a574-165e0b539868d4',
         'alert_coverage': '93',
@@ -42,12 +45,12 @@ class CookieSerializer(BaseModelSerializer):
     tt_user_info = None
     tt_user_id = None
 
-    def __init__(self, instance=None, data=None, **kwargs):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
             self.phone = data.get('phone')
             self.email = data.get('email')
 
-            validated_data = {}
+            validated_data = {key: '' for key in self.cookie_fields}
             result = self.login_to_tt(data)
             response_json = json.loads(result.text)
             if isinstance(result, Exception) or response_json['message'] != 'success':
@@ -72,9 +75,9 @@ class CookieSerializer(BaseModelSerializer):
                 # set cookie
                 header_dict = dict(result.headers)
                 re_com = re.compile(r'[^,]*?=[^,]*?;')
-                set_cookie_list = [item.strip() for item in re_com.findall(header_dict['Set-Cookie'])]
+                set_cookie_list = [item.strip() for item in re_com.findall(header_dict['set-cookie'])]
                 set_cookie_list = [item.strip(';').split('=') for item in set_cookie_list]
-                self.tt_token = header_dict['X-Tt-Token']
+                self.tt_token = header_dict['x-tt-token']
                 self.tt_user_info = response_json
                 self.tt_user_id = response_json['data']['user_id']
 
@@ -85,13 +88,20 @@ class CookieSerializer(BaseModelSerializer):
                     if key in fields:
                         validated_data[key] = value
 
-            super(CookieSerializer, self).__init__(data=validated_data, **kwargs)
+                validated_data.update(**self.contant_cookie_dict)
+                validated_data.update(**{'tt_user_id': self.tt_user_id})
+
+            cookie_instance = Cookie.get_object(tt_user_id=self.tt_user_id)
+            if isinstance(cookie_instance, Exception):
+                super(CookieSerializer, self).__init__(data=validated_data, **kwargs)
+            else:
+                super(CookieSerializer, self).__init__(instance, **kwargs)
         else:
             super(CookieSerializer, self).__init__(instance, **kwargs)
 
     class Meta:
         model = Cookie
-        field = '__all__'
+        fields = '__all__'
 
     @property
     def errors(self):
@@ -138,71 +148,114 @@ class CookieSerializer(BaseModelSerializer):
         header = HttpHeaderAction.make_tt_http_header(account=account)
         result = send_http_request(access_url=call_url,
                                    access_params=params,
-                                   method=login_info['method'],
+                                   method=login_info['login_info']['method'],
                                    headers=header,
                                    verify=False)
         return result
 
-    def save(self, **kwargs):
-        cookie_instance = Cookie.get_object(tt_user_id=self.tt_user_id)
-
+    def update_token_and_user(self, **kwargs):
         # 新建或更新token
-        tt_serializer = TokenSerializer(data={'tt_user_id': self.tt_user_id,
-                                              'token': self.tt_token})
-        if not tt_serializer.is_valid():
-            raise Exception(tt_serializer.errors)
-        tt_serializer.save()
+        token_data = {'tt_user_id': self.tt_user_id,
+                      'token': self.tt_token}
+        TokenSerializer.save_token(token_data)
 
         # 新建或更新tt user
-        tt_user_serializer = TTUserSerializer(data={'user_id': self.tt_user_id,
-                                                    'name': self.tt_user_info['data']['name'],
-                                                    'phone': self.phone,
-                                                    'email': self.email})
-        if not tt_user_serializer.is_valid():
-            raise Exception(tt_user_serializer.errors)
-        tt_user_serializer.save()
+        user_data = {'user_id': self.tt_user_id,
+                     'name': self.tt_user_info['data']['name'],
+                     'phone': self.phone,
+                     'email': self.email}
+        TTUserSerializer.save_user(user_data)
 
-        # 新建cookie
-        if isinstance(cookie_instance, Exception):
-            kwargs.update(**self.contant_cookie_dict)
-            return super(CookieSerializer, self).save(**kwargs)
+    @classmethod
+    def login_active(cls, validated_data):
+        serializer = cls(data=validated_data)
+
+        serializer.update_token_and_user()
+        if not serializer.instance:
+            if not serializer.is_valid():
+                raise Exception(serializer.errors)
+            return serializer.save()
         else:
-            # 更新cookie
-            return super(CookieSerializer, self).update(cookie_instance, self.validated_data)
+            validated_data.pop('tt_user_id')
+            return serializer.update(serializer.instance, validated_data)
 
 
 class TokenSerializer(BaseModelSerializer):
+    def __init__(self, instance=None, data=None, **kwargs):
+        if data:
+            instance = self.Meta.model.get_object(tt_user_id=data['tt_user_id'])
+            if isinstance(instance, Exception):
+                super(TokenSerializer, self).__init__(data=data, **kwargs)
+            else:
+                super(TokenSerializer, self).__init__(instance, **kwargs)
+        else:
+            super(TokenSerializer, self).__init__(instance, **kwargs)
+
     class Meta:
         model = Token
         fields = '__all__'
 
-    def save(self, **kwargs):
-        instance = self.Meta.model.get_object(tt_user_id=self.validated_data['tt_user_id'])
-        # 新建token
-        if isinstance(instance, Exception):
-            return super(TokenSerializer, self).save()
+    @classmethod
+    def save_token(cls, validated_data):
+        serializer = cls(data=validated_data)
+        if not serializer.instance:
+            if not serializer.is_valid():
+                raise Exception(serializer.errors)
+            return serializer.save()
         else:
-            # 更新token
-            return super(TokenSerializer, self).update(instance, self.validated_data)
+            validated_data.pop('tt_user_id')
+            return serializer.update(serializer.instance, validated_data)
+
+    # def save(self, **kwargs):
+    #     instance = self.Meta.model.get_object(tt_user_id=self.validated_data['tt_user_id'])
+    #     # 新建token
+    #     if isinstance(instance, Exception):
+    #         return super(TokenSerializer, self).save()
+    #     else:
+    #         # 更新token
+    #         self.instance = instance
+    #         return super(TokenSerializer, self).update(instance, self.validated_data)
 
 
 class TTUserSerializer(BaseModelSerializer):
+    def __init__(self, instance=None, data=None, **kwargs):
+        if data:
+            instance = self.Meta.model.get_object(user_id=data['user_id'])
+            if isinstance(instance, Exception):
+                super(TTUserSerializer, self).__init__(data=data, **kwargs)
+            else:
+                super(TTUserSerializer, self).__init__(instance, **kwargs)
+        else:
+            super(TTUserSerializer, self).__init__(instance, **kwargs)
+
     class Meta:
         model = TTUser
         fields = '__all__'
 
-    def save(self, **kwargs):
-        instance = self.Meta.model.get_object(user_id=self.validated_data['user_id'])
-        # 新建token
-        if isinstance(instance, Exception):
-            return super(TTUserSerializer, self).save()
+    @classmethod
+    def save_user(cls, validated_data):
+        serializer = cls(data=validated_data)
+        if not serializer.instance:
+            if not serializer.is_valid():
+                raise Exception(serializer.errors)
+            return serializer.save()
         else:
-            # 更新token
-            return super(TTUserSerializer, self).update(instance, self.validated_data)
+            validated_data.pop('user_id')
+            return serializer.update(serializer.instance, validated_data)
+
+    # def save(self, **kwargs):
+    #     instance = self.Meta.model.get_object(user_id=self.validated_data['user_id'])
+    #     # 新建token
+    #     if isinstance(instance, Exception):
+    #         return super(TTUserSerializer, self).save()
+    #     else:
+    #         # 更新token
+    #         self.instance = instance
+    #         return super(TTUserSerializer, self).update(instance, self.validated_data)
 
 
 class ArticleCommentRecordSerializer(BaseModelSerializer):
-    def __init__(self, instance=None, data=None, **kwargs):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
             # 发表评论
             result = self.comment_to_tt(data)

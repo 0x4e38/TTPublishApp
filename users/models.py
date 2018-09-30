@@ -33,7 +33,7 @@ class BusinessUserManager(BaseUserManager):
 
 
 class BusinessUser(BaseModelMixin, AbstractBaseUser):
-    email = models.EmailField(u'email地址', max_length=255, unique=True, null=True)
+    email = models.EmailField(u'email地址', max_length=128, unique=True, null=True)
     phone = models.CharField(u'手机号', max_length=20, unique=True)
     business_name = models.CharField(u'商户名称', max_length=100, default='')
 

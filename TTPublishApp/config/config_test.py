@@ -26,23 +26,6 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': 3306,
     },
-    'consumer': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fairy_mirror_cs',
-        'USER': 'fairy_mirror_test',
-        'PASSWORD': 'Con!082%Trib*HLie810283*(#2Exdwd3eifqonfI)*&#@C',
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
-        'OPTIONS': {'charset': 'utf8mb4'},
-    },
-    'admin': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fairy_mirror_ad',
-        'USER': 'fairy_mirror_test',
-        'PASSWORD': 'Con!082%Trib*HLie810283*(#2Exdwd3eifqonfI)*&#@C',
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
-    },
 }
 
 # 缓存服务器配置

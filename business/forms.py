@@ -2,7 +2,7 @@
 from horizon import forms
 
 
-class TTLoginForPhoneForm(forms.Form):
+class TTLoginActionForm(forms.Form):
     """
     TT登录
     """
