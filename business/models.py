@@ -20,6 +20,40 @@ import time
 import copy
 
 
+class TTUser(BaseModelMixin, models.Model):
+    """
+    TT user信息
+    """
+    user_id = models.BigIntegerField('TT user id', unique=True)
+    name = models.CharField('昵称', max_length=128, null=True, blank=True)
+    phone = models.CharField('手机号', max_length=16, unique=True, null=True)
+    email = models.EmailField('邮箱',  max_length=128, unique=True, null=True)
+    password_for_phone = models.CharField('手机登录密码', max_length=64, null=True)
+    password_for_email = models.CharField('邮箱登录密码', max_length=64, null=True)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        db_table = 'tt_auth_user'
+
+    def __unicode__(self):
+        return self.user_id
+
+    @classmethod
+    def get_user_detail(cls, account):
+        """
+        获取TT用户信息
+        :param account: 手机号或邮箱
+        :return: tt user info dict
+        """
+        # 邮箱
+        if '@' in account:
+            return cls.get_detail(email=account)
+        # 手机号
+        else:
+            return cls.get_detail(phone=account)
+
+
 class RequestPublicParams(BaseModelMixin, models.Model):
     """
     请求公共参数
@@ -75,15 +109,32 @@ class RequestPublicParams(BaseModelMixin, models.Model):
         :return: 
         """
         detail = cls.get_detail(phone=phone)
+        if isinstance(detail, Exception):
+            instance = cls.filter_objects(page_size=1, page_index=1)[0]
+            detail = instance.perfect_detail
         detail.pop('phone')
         return '%s?%s' % (call_url, urllib.urlencode(detail))
+
+
+class Token(BaseModelMixin, models.Model):
+    """
+    Token信息
+    """
+    tt_user_id = models.BigIntegerField('TT user ID', unique=True)
+    token = models.CharField('token字符串', max_length=128)
+
+    class Meta:
+        db_table = 'tt_token'
+
+    def __unicode__(self):
+        return '%s' % self.tt_user_id
 
 
 class Cookie(BaseModelMixin, models.Model):
     """
     Cookie信息
     """
-    phone = models.CharField('手机号', max_length=16, unique=True)
+    tt_user_id = models.BigIntegerField('TT user ID', unique=True)
 
     UM_distinctid = models.CharField('UM_distinctid', max_length=128)
     alert_coverage = models.CharField('alert_coverage', max_length=16)
@@ -99,22 +150,7 @@ class Cookie(BaseModelMixin, models.Model):
         db_table = 'tt_cookie'
 
     def __unicode__(self):
-        return '%s' % self.phone
-
-
-class Token(BaseModelMixin, models.Model):
-    """
-    Token信息
-    """
-    phone = models.CharField('手机号', max_length=16, unique=True)
-
-    token = models.CharField('token字符串', max_length=128)
-
-    class Meta:
-        db_table = 'tt_token'
-
-    def __unicode__(self):
-        return '%s' % self.phone
+        return '%s' % self.tt_user_id
 
 
 class HttpHeaderAction(object):
@@ -157,8 +193,20 @@ class HttpHeaderAction(object):
                             'odin_tt', 'sessionid', 'sid_guard', 'sid_tt', 'ttreq', 'uid_tt')
 
     @classmethod
-    def make_tt_http_header(cls, phone):
-        cookie_detail = Cookie.get_detail(phone=phone)
+    def make_tt_http_header(cls, tt_user_id=None, account=None):
+        if tt_user_id:
+            user_info = None
+        else:
+            user_info = TTUser.get_user_detail(account)
+
+        if isinstance(user_info, Exception):
+            cookie_detail = Cookie.filter_details(page_size=1, page_index=1)[0]
+            token_detail = Token.filter_details(page_size=1, page_index=1)[0]
+        else:
+            if user_info:
+                tt_user_id = user_info['user_id']
+            cookie_detail = Cookie.get_detail(tt_user_id=tt_user_id)
+            token_detail = Token.get_detail(tt_user_id=tt_user_id)
 
         cookie_str_list = []
         for cookie_key in cls.cookie_key_list:
@@ -175,7 +223,6 @@ class HttpHeaderAction(object):
 
         cookie_string = '; '.join(cookie_str_list)
         x_ss_cookie_string = '; '.join(x_ss_cookie_str_list)
-        token_detail = Token.get_detail(phone=phone)
         http_header_dict = copy.copy(cls.http_header_dict)
         http_header_dict['Cookie'] = cookie_string
         http_header_dict['X-SS-Cookie'] = x_ss_cookie_string
@@ -183,4 +230,22 @@ class HttpHeaderAction(object):
         http_header_dict['x-Tt-Token'] = token_detail['token']
         http_header_dict['x-ss-sessionid'] = cookie_detail['sessionid']
         return http_header_dict
+
+
+class ArticleCommentRecord(BaseModelMixin, models.Model):
+    """
+    文章评论记录
+    """
+    url = models.CharField('文章url', max_length=256)
+    group_id = models.CharField('文章group id', max_length=128)
+    tt_user_id = models.BigIntegerField('tt user id')
+    content = models.CharField('评论内容', max_length=256)
+    created = models.DateTimeField('创建时间', default=now)
+    updated = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        db_table = 'tt_article_comment_record'
+
+    def __unicode__(self):
+        return '%s: %s' % (self.tt_user_id, self.group_id)
 

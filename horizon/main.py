@@ -92,6 +92,16 @@ def make_perfect_time_delta(days=0, hours=0, minutes=0, seconds=0):
                                              seconds=seconds)
 
 
+def get_random_millisecond(min_value=15*1000, max_value=60*1000):
+    """
+    获取随机毫秒数
+    :param min_value: 最小毫秒数
+    :param max_value: 最大毫秒数
+    :return: 
+    """
+    return random.randint(min_value, max_value)
+
+
 class DatetimeEncode(json.JSONEncoder):
     """
     让json模块可以序列化datetime类型的字段

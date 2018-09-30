@@ -86,6 +86,8 @@ class BaseSerializer(serializers.Serializer):
 
 
 class BaseModelSerializer(serializers.ModelSerializer):
+    _p_errors = None
+
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
             # self.make_perfect_initial_data(data)
@@ -105,6 +107,13 @@ class BaseModelSerializer(serializers.ModelSerializer):
     def save(self, **kwargs):
         self.make_perfect_initial_data(self.validated_data)
         return super(BaseModelSerializer, self).save(**kwargs)
+
+    @property
+    def errors(self):
+        if self._p_errors:
+            return self._p_errors
+        else:
+            return super(BaseModelSerializer, self).errors
 
     def make_perfect_initial_data(self, data):
         fields = self.Meta.model._meta.fields

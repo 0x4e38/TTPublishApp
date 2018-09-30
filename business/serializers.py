@@ -5,9 +5,12 @@ from django.conf import settings
 from business.models import (Cookie,
                              Token,
                              RequestPublicParams,
-                             HttpHeaderAction)
+                             HttpHeaderAction,
+                             TTUser,
+                             ArticleCommentRecord)
 from business.configs import (APP_REQUEST_PARAMS,
-                              APP_REQUEST_URLS)
+                              APP_REQUEST_URLS,
+                              make_perfect_tt_security_string)
 from horizon.models import model_to_dict
 from horizon import main
 from horizon.serializers import (BaseListSerializer,
@@ -34,28 +37,20 @@ class CookieSerializer(BaseModelSerializer):
     }
     _p_errors = None
     phone = None
+    email = None
     tt_token = None
+    tt_user_info = None
+    tt_user_id = None
 
     def __init__(self, instance=None, data=None, **kwargs):
         if data:
-            self.phone = data['phone']
-            # 向TT发送登录请求
-            call_url = RequestPublicParams.get_perfect_url_with_query_string(
-                phone=self.phone,
-                call_url=APP_REQUEST_URLS['login']['url']
-            )
-            params = copy.copy(APP_REQUEST_PARAMS['login'])
-            params['code'] = data['identifying_code']
-            params['mobile'] = self.phone
+            self.phone = data.get('phone')
+            self.email = data.get('email')
 
             validated_data = {}
-            header = HttpHeaderAction.make_tt_http_header(phone=self.phone)
-            result = send_http_request(access_url=call_url,
-                                       access_params=params,
-                                       method=APP_REQUEST_URLS['login']['method'],
-                                       headers=header,
-                                       verify=False)
-            if isinstance(result, Exception) or result.text['message'] != 'success':
+            result = self.login_to_tt(data)
+            response_json = json.loads(result.text)
+            if isinstance(result, Exception) or response_json['message'] != 'success':
                 self._p_errors = 'Login TT failed'
             else:
                 # 登录成功
@@ -80,6 +75,8 @@ class CookieSerializer(BaseModelSerializer):
                 set_cookie_list = [item.strip() for item in re_com.findall(header_dict['Set-Cookie'])]
                 set_cookie_list = [item.strip(';').split('=') for item in set_cookie_list]
                 self.tt_token = header_dict['X-Tt-Token']
+                self.tt_user_info = response_json
+                self.tt_user_id = response_json['data']['user_id']
 
                 opts = self.Meta.model._meta
                 fields = [f.name for f in opts.concrete_fields]
@@ -103,15 +100,67 @@ class CookieSerializer(BaseModelSerializer):
         else:
             return super(CookieSerializer, self).errors
 
+    def login_to_tt(self, data):
+        login_info_dict = {
+            # 手机号、验证码登录
+            'phone_identifying_code': {
+                'login_info': APP_REQUEST_URLS['login_mobile'],
+                'login_params': APP_REQUEST_PARAMS['login_mobile']
+            },
+            # 手机号、密码登录
+            'phone_password': {
+                'login_info': APP_REQUEST_URLS['login_mobile_password'],
+                'login_params': APP_REQUEST_PARAMS['login_mobile_password']
+            },
+            # 邮箱、密码登录
+            'email_password': {
+                'login_info': APP_REQUEST_URLS['login_email'],
+                'login_params': APP_REQUEST_PARAMS['login_email']
+            }
+        }
+        params_info_dict = {
+            'phone_identifying_code': ('mobile', 'code'),
+            'phone_password': ('mobile', 'password'),
+            'email_password': ('email', 'password'),
+        }
+
+        account = data['phone'] if data['login_type'].startswith('phone') else data['email']
+        login_info = login_info_dict[data['login_type']]
+        # 向TT发送登录请求
+        call_url = RequestPublicParams.get_perfect_url_with_query_string(
+            phone=self.phone,
+            call_url=login_info['login_info']['url']
+        )
+        params = copy.copy(login_info['login_params'])
+        params[params_info_dict[data['login_type']][0]] = make_perfect_tt_security_string(account)
+        params[params_info_dict[data['login_type']][1]] = make_perfect_tt_security_string(data['password'])
+
+        header = HttpHeaderAction.make_tt_http_header(account=account)
+        result = send_http_request(access_url=call_url,
+                                   access_params=params,
+                                   method=login_info['method'],
+                                   headers=header,
+                                   verify=False)
+        return result
+
     def save(self, **kwargs):
-        cookie_instance = Cookie.get_object(phone=self.phone)
+        cookie_instance = Cookie.get_object(tt_user_id=self.tt_user_id)
 
         # 新建或更新token
-        tt_serializer = TokenSerializer(data={'phone': self.phone,
+        tt_serializer = TokenSerializer(data={'tt_user_id': self.tt_user_id,
                                               'token': self.tt_token})
         if not tt_serializer.is_valid():
             raise Exception(tt_serializer.errors)
         tt_serializer.save()
+
+        # 新建或更新tt user
+        tt_user_serializer = TTUserSerializer(data={'user_id': self.tt_user_id,
+                                                    'name': self.tt_user_info['data']['name'],
+                                                    'phone': self.phone,
+                                                    'email': self.email})
+        if not tt_user_serializer.is_valid():
+            raise Exception(tt_user_serializer.errors)
+        tt_user_serializer.save()
 
         # 新建cookie
         if isinstance(cookie_instance, Exception):
@@ -128,7 +177,7 @@ class TokenSerializer(BaseModelSerializer):
         fields = '__all__'
 
     def save(self, **kwargs):
-        instance = self.Meta.model.get_object(phone=self.validated_data['phone'])
+        instance = self.Meta.model.get_object(tt_user_id=self.validated_data['tt_user_id'])
         # 新建token
         if isinstance(instance, Exception):
             return super(TokenSerializer, self).save()
@@ -136,3 +185,60 @@ class TokenSerializer(BaseModelSerializer):
             # 更新token
             return super(TokenSerializer, self).update(instance, self.validated_data)
 
+
+class TTUserSerializer(BaseModelSerializer):
+    class Meta:
+        model = TTUser
+        fields = '__all__'
+
+    def save(self, **kwargs):
+        instance = self.Meta.model.get_object(user_id=self.validated_data['user_id'])
+        # 新建token
+        if isinstance(instance, Exception):
+            return super(TTUserSerializer, self).save()
+        else:
+            # 更新token
+            return super(TTUserSerializer, self).update(instance, self.validated_data)
+
+
+class ArticleCommentRecordSerializer(BaseModelSerializer):
+    def __init__(self, instance=None, data=None, **kwargs):
+        if data:
+            # 发表评论
+            result = self.comment_to_tt(data)
+            response_json = json.loads(result.text)
+            if isinstance(result, Exception) or response_json['message'] != 'success':
+                self._p_errors = 'Comment to TT failed'
+
+            super(ArticleCommentRecordSerializer, self).__init__(data=data, **kwargs)
+        else:
+            super(ArticleCommentRecordSerializer, self).__init__(instance, **kwargs)
+
+    class Meta:
+        model = ArticleCommentRecord
+        fields = '__all__'
+
+    def comment_to_tt(self, data):
+        comment_url_info = APP_REQUEST_URLS['comment']
+        comment_params = APP_REQUEST_PARAMS['comment']
+
+        # 向TT发送登录请求
+        call_url = RequestPublicParams.get_perfect_url_with_query_string(
+            phone=None,
+            call_url=comment_url_info['url']
+        )
+        params = copy.copy(comment_params)
+        params['comment_duration'] = params['comment_duration']()
+        params['content'] = data['comment_content']
+        params['group_id'] = data['group_id']
+        params['item_id'] = data['group_id']
+        params['staytime_ms'] = params['staytime_ms']()
+        params['text'] = data['comment_content']
+
+        header = HttpHeaderAction.make_tt_http_header(tt_user_id=data['tt_user_id'])
+        result = send_http_request(access_url=call_url,
+                                   access_params=params,
+                                   method=comment_url_info['method'],
+                                   headers=header,
+                                   verify=False)
+        return result
