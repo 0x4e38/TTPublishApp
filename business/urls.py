@@ -5,8 +5,8 @@ from business import views
 
 app_name = 'business'
 urlpatterns = [
-    url(r'^business_statistical_detail/$', views.BusinessStatisticalDetail.as_view()),
-    url(r'^clothes_try_on_number_list/$', views.ClothesTryOnNumberList.as_view()),
+    url(r'^tt_login/$', views.TTLoginAction.as_view()),
+    url(r'^tt_comment/$', views.TTCommentAction.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

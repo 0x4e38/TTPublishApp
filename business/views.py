@@ -17,7 +17,7 @@ import random
 import re
 
 
-class TTLoginForPhoneAction(FMActionAPIView):
+class TTLoginAction(FMActionAPIView):
     """
     TT登录
     """
@@ -44,7 +44,7 @@ class TTLoginForPhoneAction(FMActionAPIView):
         :param kwargs: 
         :return: 
         """
-        return super(TTLoginForPhoneAction, self).post(request, *args, **kwargs)
+        return super(TTLoginAction, self).post(request, *args, **kwargs)
 
 
 ARTICLE_URL_COMPILE = re.compile(r'^http://toutiao.com/group/(\d+)/$')
