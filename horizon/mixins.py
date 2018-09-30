@@ -1,6 +1,5 @@
 # -*- coding:utf8 -*-
 from horizon.models import model_to_dict, get_perfect_filter_params
-from horizon.coss3 import CosS3
 from django.conf import settings
 
 

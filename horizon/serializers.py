@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db import models
 from horizon.main import timezoneStringTostring
 from horizon.models import model_to_dict
-from horizon.coss3 import CosS3
 from horizon import main
 
 import os
@@ -118,15 +117,15 @@ class BaseModelSerializer(serializers.ModelSerializer):
     def make_perfect_initial_data(self, data):
         fields = self.Meta.model._meta.fields
         model_name = self.Meta.model._meta.model_name
-        for field in fields:
-            field_name = field.name
-            if field_name.endswith('_url') and field_name in data:
-                fp_file = open(data[field_name], 'rb')
-                perfect_file_name = data[field_name].split('static/')[1]
-                # 上传照片至腾讯云cos服务
-                CosS3().put_object(body=fp_file, file_name=perfect_file_name)
-                data[field_name] = perfect_file_name
-                fp_file.close()
+        # for field in fields:
+        #     field_name = field.name
+        #     if field_name.endswith('_url') and field_name in data:
+        #         fp_file = open(data[field_name], 'rb')
+        #         perfect_file_name = data[field_name].split('static/')[1]
+        #         # 上传照片至腾讯云cos服务
+        #         CosS3().put_object(body=fp_file, file_name=perfect_file_name)
+        #         data[field_name] = perfect_file_name
+        #         fp_file.close()
 
 
 def perfect_result(self, _data):
