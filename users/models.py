@@ -36,21 +36,8 @@ class BusinessUser(BaseModelMixin, AbstractBaseUser):
     email = models.EmailField(u'email地址', max_length=255, unique=True, null=True)
     phone = models.CharField(u'手机号', max_length=20, unique=True)
     business_name = models.CharField(u'商户名称', max_length=100, default='')
-    brand = models.CharField(u'所属品牌', max_length=60, null=True, default='')
-    manager = models.CharField(u'经理人姓名', max_length=20, null=True, default='')
-    mall_id = models.IntegerField(u'购物中心ID', null=True)
-    backup_phone = models.CharField(u'备用手机号', max_length=20, null=True, default='')
 
     logo_url = models.CharField(u'头像', max_length=200, default='')
-    longitude = models.CharField(u'经度', max_length=32, null=True, default='')
-    latitude = models.CharField(u'维度', max_length=32, null=True, default='')
-    city_id = models.IntegerField(u'地区-市ID', null=True)
-    address = models.CharField(u'街道地址', max_length=128, null=True, default='')
-    hotline = models.CharField(u'店铺联系电话', max_length=16, null=True)
-
-    # 用户角色 1：root用户 2：品牌用户  3：门店用户
-    role = models.IntegerField(u'角色', default=3)
-    permission_group_id = models.IntegerField(u'所属权限组ID')
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=True)
     date_joined = models.DateTimeField(u'创建时间', default=now)
@@ -73,36 +60,6 @@ class BusinessUser(BaseModelMixin, AbstractBaseUser):
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
-
-    @property
-    def is_common_store_user(self):
-        if self.role == 3 and self.perfect_detail['permission_group'] == 'store_common':
-            return True
-        return False
-
-    @property
-    def is_senior_store_user(self):
-        if self.role == 3 and self.perfect_detail['permission_group'] == 'store_senior':
-            return True
-        return False
-
-    @property
-    def is_store_user(self):
-        if self.role == 3:
-            return True
-        return False
-
-    @property
-    def is_root_user(self):
-        if self.role == 1:
-            return True
-        return False
-
-    @property
-    def is_brand_user(self):
-        if self.role == 2:
-            return True
-        return False
 
 
 def make_token_expire(request):

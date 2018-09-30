@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '2kpeanl_l@*1-cOIB@&6i(w8)54svrw)%ohd2n*p6kw2gs-m0*'
+SECRET_KEY = '2kpeanl_l@*1-cOIB@&6i(w8)54svrw)%o3#2n*p6kw2gs-m0*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
@@ -60,7 +60,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'horizon.middleware.common.CommonMiddleware',
+    # 'horizon.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'TTPublishApp.urls'
@@ -186,13 +186,9 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-
         # 'rest_framework.authentication.BasicAuthentication',
         # 'rest_framework.authentication.SessionAuthentication',
     ),
-
-    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    # 'PAGE_SIZE': 100,
 }
 
 # pagination
