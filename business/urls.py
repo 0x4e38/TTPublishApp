@@ -9,6 +9,11 @@ urlpatterns = [
     url(r'^tt_comment/$', views.TTCommentAction.as_view()),
 
     url(r'^tt_signed_user_list/$', views.TTSignedUserList.as_view()),
+    url(r'^tt_article_action/$', views.ArticleAction.as_view()),
+    url(r'^tt_article_detail/$', views.ArticleDetail.as_view()),
+    url(r'^tt_article_list/$', views.ArticleList.as_view()),
+
+    url(r'^tt_article_comment_record_list/$', views.ArticleCommentRecordList.as_view()),
 
 ]
 

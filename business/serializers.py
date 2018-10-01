@@ -303,6 +303,24 @@ class ArticleCommentRecordSerializer(BaseModelSerializer):
         return result
 
 
+class ArticleCommentRecordDetailSerializer(BaseSerializer):
+    article_id = serializers.IntegerField()
+    group_id = serializers.CharField()
+    tt_user_id = serializers.IntegerField()
+    content = serializers.CharField()
+    created = serializers.DateTimeField()
+    updated = serializers.DateTimeField()
+    article_url = serializers.CharField(allow_null=True, allow_blank=True)
+    article_title = serializers.CharField(allow_null=True, allow_blank=True)
+    tt_user_name = serializers.CharField(allow_null=True, allow_blank=True)
+    phone = serializers.CharField(allow_null=True, allow_blank=True)
+    email = serializers.CharField(allow_null=True, allow_blank=True)
+
+
+class ArticleCommentRecordListSerializer(BaseListSerializer):
+    child = ArticleCommentRecordDetailSerializer()
+
+
 class ArticleSerializer(BaseModelSerializer):
     class Meta:
         model = Article

@@ -74,3 +74,9 @@ class ArticleDetailForm(forms.Form):
 class ArticleListForm(forms.Form):
     page_size = forms.IntegerField(min_value=1, required=False)
     page_index = forms.IntegerField(min_value=1, required=False)
+
+
+class ArticleCommentRecrodListForm(forms.Form):
+    page_size = forms.IntegerField(min_value=1, required=False)
+    page_index = forms.IntegerField(min_value=1, required=False)
+

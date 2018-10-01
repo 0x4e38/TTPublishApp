@@ -8,6 +8,8 @@ app_name = 'users'
 urlpatterns = [
     url(r'^login/$', users_view.AuthLogin.as_view()),
     url(r'^logout/$', users_view.AuthLogout.as_view()),
+
+    url(r'^detail/$', users_view.UserDetail.as_view()),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -87,7 +87,7 @@ class BaseSerializer(serializers.Serializer):
 class BaseModelSerializer(serializers.ModelSerializer):
     _p_errors = None
 
-    def __init__(self, instance=None, data=None, **kwargs):
+    def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
             # self.make_perfect_initial_data(data)
             super(BaseModelSerializer, self).__init__(data=data, **kwargs)

@@ -244,7 +244,7 @@ class ArticleCommentRecord(BaseModelMixin, models.Model):
     """
     文章评论记录
     """
-    url = models.CharField(u'文章url', max_length=256)
+    article_id = models.IntegerField(u'文章ID', max_length=256)
     group_id = models.CharField(u'文章group id', max_length=128)
     tt_user_id = models.BigIntegerField(u'tt user id')
     content = models.CharField(u'评论内容', max_length=256)
@@ -256,6 +256,23 @@ class ArticleCommentRecord(BaseModelMixin, models.Model):
 
     def __unicode__(self):
         return '%s: %s' % (self.tt_user_id, self.group_id)
+
+    @property
+    def perfect_detail(self):
+        detail = super(ArticleCommentRecord, self).perfect_detail
+        article_detail = Article.get_detail(pk=detail['article_id'])
+        tt_user_detail = TTUser.get_detail(user_id=detail['tt_user_id'])
+        if isinstance(article_detail, Exception):
+            article_detail = {}
+        if isinstance(tt_user_detail, Exception):
+            tt_user_detail = {}
+
+        detail.update(**{'article_url': article_detail.get('url'),
+                         'article_title': article_detail.get('title'),
+                         'tt_user_name': tt_user_detail.get('name'),
+                         'phone': tt_user_detail.get('phone'),
+                         'email': tt_user_detail.get('email')})
+        return detail
 
 
 class Article(BaseModelMixin, models.Model):

@@ -6,7 +6,8 @@ from business.serializers import (CookieSerializer,
                                   ArticleCommentRecordSerializer,
                                   TTUserListSerializer,
                                   ArticleSerializer,
-                                  ArticleListSerializer)
+                                  ArticleListSerializer,
+                                  ArticleCommentRecordListSerializer)
 from business.forms import (TTLoginActionForm,
                             TTCommentActionForm,
                             TTSignedUserListForm,
@@ -14,7 +15,8 @@ from business.forms import (TTLoginActionForm,
                             ArticleUpdateForm,
                             ArticleDeleteForm,
                             ArticleDetailForm,
-                            ArticleListForm)
+                            ArticleListForm,
+                            ArticleCommentRecrodListForm)
 from business.models import (TTUser,
                              ArticleCommentRecord,
                              Article)
@@ -75,7 +77,14 @@ class TTLoginAction(generics.GenericAPIView):
         return fm_status.return_success_response()
 
 
-ARTICLE_URL_COMPILE = re.compile(r'^https://m.toutiaocdn.cn/group/(\d+)/$')
+ARTICLE_URL_COMPILE = re.compile(r'^https://m.toutiaocdn.cn/group/(\d+)/$|'
+                                 r'^https://m.toutiaocdn.com/group/(\d+)/$|'
+                                 r'^https://m.toutiaocdn.cn/item/(\d+)/$|'
+                                 r'^https://m.toutiaocdn.com/item/(\d+)/$|'
+                                 r'^https://m.toutiaocdn.cn/i(\d+)/$|'
+                                 r'^https://www.toutiao.com/group/(\d+)/$|'
+                                 r'^http://toutiao.com/group/(\d+)/$|'
+                                 r'^https://www.toutiao.com/a(\d+)/$')
 
 
 class TTCommentAction(FMActionAPIView):
@@ -96,7 +105,9 @@ class TTCommentAction(FMActionAPIView):
     def get_perfect_request_data(self, **kwargs):
         article_url = kwargs.pop('article_url')
         result = ARTICLE_URL_COMPILE.match(article_url)
-        kwargs['group_id'] = result.group(1)
+        match_list = result.groups()
+        group_id = [item for item in match_list if item][0]
+        kwargs['group_id'] = group_id
         kwargs['url'] = article_url
 
         return kwargs
@@ -211,3 +222,24 @@ class ArticleList(FMListAPIView):
         """
         return super(ArticleList, self).post(request, *args, **kwargs)
 
+
+class ArticleCommentRecordList(FMListAPIView):
+    """
+    获取文章评论列表
+    """
+    list_form_class = ArticleCommentRecrodListForm
+    list_serializer_class = ArticleCommentRecordListSerializer
+    model_class = ArticleCommentRecord
+
+    def get_instances_list(self, request, **kwargs):
+        return self.model_class.filter_details(**kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取文章评论列表
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleCommentRecordList, self).post(request, *args, **kwargs)
