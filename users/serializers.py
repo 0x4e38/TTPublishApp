@@ -34,4 +34,4 @@ class UserSerializer(BaseModelSerializer):
 
     class Meta:
         model = BusinessUser
-        fields = '__all__'
+        fields = ('email', 'phone', 'business_name', 'logo_url')

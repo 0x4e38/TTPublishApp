@@ -7,6 +7,9 @@ app_name = 'business'
 urlpatterns = [
     url(r'^tt_login/$', views.TTLoginAction.as_view()),
     url(r'^tt_comment/$', views.TTCommentAction.as_view()),
+
+    url(r'^tt_signed_user_list/$', views.TTSignedUserList.as_view()),
+
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

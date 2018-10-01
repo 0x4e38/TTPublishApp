@@ -7,7 +7,8 @@ from business.models import (Cookie,
                              RequestPublicParams,
                              HttpHeaderAction,
                              TTUser,
-                             ArticleCommentRecord)
+                             ArticleCommentRecord,
+                             Article)
 from business.configs import (APP_REQUEST_PARAMS,
                               APP_REQUEST_URLS,
                               make_perfect_tt_security_string)
@@ -232,7 +233,7 @@ class TTUserSerializer(BaseModelSerializer):
 
     class Meta:
         model = TTUser
-        fields = '__all__'
+        fields = ('user_id', 'name', 'phone', 'email', 'created', 'updated')
 
     @classmethod
     def save_user(cls, validated_data):
@@ -254,6 +255,10 @@ class TTUserSerializer(BaseModelSerializer):
     #         # 更新token
     #         self.instance = instance
     #         return super(TTUserSerializer, self).update(instance, self.validated_data)
+
+
+class TTUserListSerializer(BaseListSerializer):
+    child = TTUserSerializer()
 
 
 class ArticleCommentRecordSerializer(BaseModelSerializer):
@@ -296,3 +301,25 @@ class ArticleCommentRecordSerializer(BaseModelSerializer):
                                    headers=header,
                                    verify=False)
         return result
+
+
+class ArticleSerializer(BaseModelSerializer):
+    class Meta:
+        model = Article
+        fields = '__all__'
+
+    def update(self, instance, validated_data):
+        pop_keys = ('id', 'pk')
+        for p_key in pop_keys:
+            if p_key in validated_data:
+                validated_data.pop(p_key)
+
+        return super(ArticleSerializer, self).update(instance, validated_data)
+
+    def delete(self, instance):
+        validated_data = {'status': instance.id + 1}
+        return super(ArticleSerializer, self).update(instance, validated_data)
+
+
+class ArticleListSerializer(BaseListSerializer):
+    child = ArticleSerializer()

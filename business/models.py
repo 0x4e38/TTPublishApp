@@ -11,6 +11,7 @@ from horizon.main import (minutes_15_plus,
                           minutes_5_plus,
                           make_millisecond_time_stamp)
 from horizon.mixins import BaseModelMixin
+from horizon.models import BaseManager
 
 import datetime
 import re
@@ -256,3 +257,23 @@ class ArticleCommentRecord(BaseModelMixin, models.Model):
     def __unicode__(self):
         return '%s: %s' % (self.tt_user_id, self.group_id)
 
+
+class Article(BaseModelMixin, models.Model):
+    """
+    文章
+    """
+    url = models.CharField(u'文章url', max_length=128, unique=True)
+    title = models.CharField(u'文章标题', max_length=256, null=True, blank=True)
+
+    # 数据状态：status 1：正常 非1：已删除
+    status = models.IntegerField(u'数据状态', default=1)
+    created = models.DateTimeField(u'创建时间', default=now)
+    updated = models.DateTimeField(u'更新时间', auto_now=True)
+
+    objects = BaseManager()
+
+    class Meta:
+        db_table = 'tt_article'
+
+    def __unicode__(self):
+        return self.title

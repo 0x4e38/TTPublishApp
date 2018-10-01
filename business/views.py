@@ -3,11 +3,21 @@ from django.utils.timezone import now
 from rest_framework import generics
 
 from business.serializers import (CookieSerializer,
-                                  ArticleCommentRecordSerializer)
+                                  ArticleCommentRecordSerializer,
+                                  TTUserListSerializer,
+                                  ArticleSerializer,
+                                  ArticleListSerializer)
 from business.forms import (TTLoginActionForm,
-                            TTCommentActionForm)
+                            TTCommentActionForm,
+                            TTSignedUserListForm,
+                            ArticleInputForm,
+                            ArticleUpdateForm,
+                            ArticleDeleteForm,
+                            ArticleDetailForm,
+                            ArticleListForm)
 from business.models import (TTUser,
-                             ArticleCommentRecord)
+                             ArticleCommentRecord,
+                             Article)
 from horizon.views import (FMActionAPIView,
                            FMDetailAPIView,
                            FMListAPIView)
@@ -100,3 +110,104 @@ class TTCommentAction(FMActionAPIView):
         :return: 
         """
         return super(TTCommentAction, self).post(request, *args, **kwargs)
+
+
+class TTSignedUserList(FMListAPIView):
+    """
+    TT登录状态的用户列表
+    """
+    list_form_class = TTSignedUserListForm
+    list_serializer_class = TTUserListSerializer
+    model_class = TTUser
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取TT登录状态的用户列表
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(TTSignedUserList, self).post(request, *args, **kwargs)
+
+
+class ArticleAction(FMActionAPIView):
+    """
+    文章url、title录入、修改及删除
+    """
+    post_form_class = ArticleInputForm
+    post_serializer_class = ArticleSerializer
+    put_form_class = ArticleUpdateForm
+    put_serializer_class = ArticleSerializer
+    delete_form_class = ArticleDeleteForm
+    delete_serializer_class = ArticleSerializer
+    model_class = Article
+
+    def post(self, request, *args, **kwargs):
+        """
+        创建文章
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleAction, self).post(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        """
+        更新文章
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleAction, self).put(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        """
+        删除文章
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleAction, self).delete(request, *args, **kwargs)
+
+
+class ArticleDetail(FMDetailAPIView):
+    """
+    文章详情
+    """
+    detail_form_class = ArticleDetailForm
+    detail_serializer_class = ArticleSerializer
+    model_class = Article
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取文章详情
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleDetail, self).post(request, *args, **kwargs)
+
+
+class ArticleList(FMListAPIView):
+    """
+    获取文章详情列表
+    """
+    list_form_class = ArticleListForm
+    list_serializer_class = ArticleListSerializer
+    model_class = Article
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取文章详情列表
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(ArticleList, self).post(request, *args, **kwargs)
+

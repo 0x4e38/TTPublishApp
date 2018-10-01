@@ -12,6 +12,7 @@ from users.serializers import (UserSerializer,)
 from users.permissions import IsOwnerOrReadOnly
 from users.models import (BusinessUser,
                           make_token_expire)
+from users.forms import UserDetailForm
 
 from horizon.views import (APIView,
                            FMDetailAPIView,
@@ -57,3 +58,25 @@ class AuthLogout(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         make_token_expire(request)
         return Response(status=status.HTTP_200_OK)
+
+
+class UserDetail(FMDetailAPIView):
+    """
+    获取哦用户详情
+    """
+    detail_form_class = UserDetailForm
+    detail_serializer_class = UserSerializer
+    model_class = BusinessUser
+
+    def get_instance(self, request, **kwargs):
+        return self.model_class.get_object(**{'pk': request.user.id})
+
+    def post(self, request, *args, **kwargs):
+        """
+        获取用户详情
+        :param request: 
+        :param args: 
+        :param kwargs: 
+        :return: 
+        """
+        return super(UserDetail, self).post(request, *args, **kwargs)

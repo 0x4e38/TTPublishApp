@@ -43,3 +43,34 @@ class TTCommentActionForm(forms.Form):
                                   'max_length': u'评论内容太长',
                               })
 
+
+class TTSignedUserListForm(forms.Form):
+    """
+    TT登录用户列表
+    """
+    page_size = forms.IntegerField(min_value=1, required=False)
+    page_index = forms.IntegerField(min_value=1, required=False)
+
+
+class ArticleInputForm(forms.Form):
+    url = forms.CharField(max_length=128)
+    title = forms.CharField(max_length=256, required=False)
+
+
+class ArticleUpdateForm(forms.Form):
+    pk = forms.IntegerField(min_value=1)
+    url = forms.CharField(max_length=128, required=False)
+    title = forms.CharField(max_length=256, required=False)
+
+
+class ArticleDeleteForm(forms.Form):
+    pk = forms.IntegerField(min_value=1)
+
+
+class ArticleDetailForm(forms.Form):
+    pk = forms.IntegerField(min_value=1)
+
+
+class ArticleListForm(forms.Form):
+    page_size = forms.IntegerField(min_value=1, required=False)
+    page_index = forms.IntegerField(min_value=1, required=False)
