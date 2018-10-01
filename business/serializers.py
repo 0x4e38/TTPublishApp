@@ -45,6 +45,7 @@ class CookieSerializer(BaseModelSerializer):
     tt_token = None
     tt_user_info = None
     tt_user_id = None
+    tt_validated_data = None
 
     def __init__(self, instance=None, data=None, request=None, **kwargs):
         if data:
@@ -91,12 +92,13 @@ class CookieSerializer(BaseModelSerializer):
 
                 validated_data.update(**self.contant_cookie_dict)
                 validated_data.update(**{'tt_user_id': self.tt_user_id})
+                self.tt_validated_data = validated_data
 
             cookie_instance = Cookie.get_object(tt_user_id=self.tt_user_id)
             if isinstance(cookie_instance, Exception):
                 super(CookieSerializer, self).__init__(data=validated_data, **kwargs)
             else:
-                super(CookieSerializer, self).__init__(instance, **kwargs)
+                super(CookieSerializer, self).__init__(cookie_instance, **kwargs)
         else:
             super(CookieSerializer, self).__init__(instance, **kwargs)
 
@@ -179,8 +181,8 @@ class CookieSerializer(BaseModelSerializer):
                 raise Exception(serializer.errors)
             return serializer.save()
         else:
-            validated_data.pop('tt_user_id')
-            return serializer.update(serializer.instance, validated_data)
+            serializer.tt_validated_data.pop('tt_user_id')
+            return serializer.update(serializer.instance, serializer.tt_validated_data)
 
 
 class TokenSerializer(BaseModelSerializer):
@@ -311,7 +313,7 @@ class ArticleCommentRecordDetailSerializer(BaseSerializer):
     created = serializers.DateTimeField()
     updated = serializers.DateTimeField()
     article_url = serializers.CharField(allow_null=True, allow_blank=True)
-    article_title = serializers.CharField(allow_null=True, allow_blank=True)
+    # article_title = serializers.CharField(allow_null=True, allow_blank=True)
     tt_user_name = serializers.CharField(allow_null=True, allow_blank=True)
     phone = serializers.CharField(allow_null=True, allow_blank=True)
     email = serializers.CharField(allow_null=True, allow_blank=True)

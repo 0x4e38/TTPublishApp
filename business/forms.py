@@ -33,9 +33,9 @@ class TTCommentActionForm(forms.Form):
     TT评论
     """
     tt_user_id = forms.IntegerField(min_value=1)
-    article_url = forms.CharField(min_length=32,
+    article_url = forms.CharField(max_length=128,
                                   error_messages={
-                                      'required': u'文章url不能为空',
+                                      'required': u'文章URL不能为空',
                                   })
     content = forms.CharField(min_length=1, max_length=256,
                               error_messages={

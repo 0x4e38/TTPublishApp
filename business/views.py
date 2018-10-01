@@ -82,6 +82,7 @@ ARTICLE_URL_COMPILE = re.compile(r'^https://m.toutiaocdn.cn/group/(\d+)/$|'
                                  r'^https://m.toutiaocdn.cn/item/(\d+)/$|'
                                  r'^https://m.toutiaocdn.com/item/(\d+)/$|'
                                  r'^https://m.toutiaocdn.cn/i(\d+)/$|'
+                                 r'^https://m.toutiaocdn.com/i(\d+)/$|'
                                  r'^https://www.toutiao.com/group/(\d+)/$|'
                                  r'^http://toutiao.com/group/(\d+)/$|'
                                  r'^https://www.toutiao.com/a(\d+)/$')
@@ -103,12 +104,11 @@ class TTCommentAction(FMActionAPIView):
         return True, None
 
     def get_perfect_request_data(self, **kwargs):
-        article_url = kwargs.pop('article_url')
+        article_url = kwargs['article_url']
         result = ARTICLE_URL_COMPILE.match(article_url)
         match_list = result.groups()
         group_id = [item for item in match_list if item][0]
         kwargs['group_id'] = group_id
-        kwargs['url'] = article_url
 
         return kwargs
 
@@ -153,6 +153,13 @@ class ArticleAction(FMActionAPIView):
     delete_form_class = ArticleDeleteForm
     delete_serializer_class = ArticleSerializer
     model_class = Article
+
+    def is_request_data_valid(self, **kwargs):
+        if 'url' in kwargs:
+            result = ARTICLE_URL_COMPILE.match(kwargs['url'])
+            if not result:
+                return False, 'Article url is incorrect!'
+        return True, None
 
     def post(self, request, *args, **kwargs):
         """
